@@ -28,8 +28,7 @@ use node::Node;
 
 fn main() -> Result<(), XEOError> {
     let node = Node::new()?;
-    node.start_udp_recv();
-    node.start_repl()?;
+    node.run();
 
     Ok(())
 }

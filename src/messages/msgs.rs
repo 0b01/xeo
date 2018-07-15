@@ -1,16 +1,18 @@
 use std::net::SocketAddr;
 
+type SrcAddr = SocketAddr;
+type DstAddr = SocketAddr;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub enum NetworkRequest {
     GetPubKey {
-        src: SocketAddr,
+        src: SrcAddr,
         req: PubKeyRequest
     },
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub enum NetworkResponse {
-    PubKeyResponse(SocketAddr, PubKeyResponse),
+    PubKeyResponse{
+        src: SrcAddr,
+        key: PubKeyResponse
+    },
 }
 
 #[derive(Debug, Serialize, Deserialize)]

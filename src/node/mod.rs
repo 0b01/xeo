@@ -1,26 +1,25 @@
-pub mod handler;
+pub mod msg_handler;
+pub mod udp;
 pub mod cli;
 pub mod repl;
+pub mod state;
 
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use self::msg_handler::MsgHandler;
+use self::repl::ReplHandler;
+use self::udp::UdpHandler;
+
+use std::net::SocketAddr;
 use structopt::StructOpt;
 use errors::XEOError;
-use std::sync::mpsc;
+use std::sync::mpsc::{self, Sender, Receiver};
+use messages::msgs::NetworkRequest;
+use std::sync::{Arc, Mutex};
 
-use self::repl::{ReplParser, ReplCmd};
+type DstAddr = SocketAddr;
 
-use std::net::UdpSocket;
-use std::sync::mpsc::{Sender, Receiver};
-use messages::msgs::{NetworkRequest, PubKeyRequest};
-use std::thread;
-use bincode::{deserialize, serialize};
-
-use std::io::{self, BufRead, Write};
 pub struct Node {
-    udp_addr: SocketAddr,
-    udp_socket: UdpSocket,
-    parser: ReplParser,
-    req_tx: Sender<NetworkRequest>,
+    res_rx: Receiver<(DstAddr, NetworkRequest)>,
+    msg_tx: Sender<(DstAddr, NetworkRequest)>,
 }
 
 impl Node {
@@ -29,78 +28,31 @@ impl Node {
         opt.setup_logger()?;
 
         let udp_addr = format!("127.0.0.1:{}", opt.port);
-        let udp_socket = Node::start_udp(&udp_addr)?;
         let udp_addr = udp_addr.parse::<SocketAddr>()?;
 
-        let (tx, rx) = mpsc::channel();
+        let (msg_tx, msg_rx) = mpsc::channel();
+        let (req_tx, req_rx) = mpsc::channel();
+        let (res_tx, res_rx) = mpsc::channel();
 
-        let parser = ReplParser::new();
-        let handler = handler::NodeHandler::new();
-        handler.run(rx);
+        let state = Arc::new(Mutex::new(state::NodeState::new(udp_addr)));
+
+        let udp_handler = UdpHandler::new(state.clone())?;
+        udp_handler.run(msg_rx, req_tx);
+        let msg_handler = MsgHandler::new(state.clone());
+        msg_handler.run(req_rx, res_tx);
+        let repl_handler = ReplHandler::new(state.clone());
+        repl_handler.run(msg_tx.clone())?;
+
 
         Ok(Self {
-            udp_addr,
-            udp_socket,
-            parser,
-            req_tx: tx,
+            res_rx,
+            msg_tx,
         })
     }
 
-    pub fn start_udp(addr: &str) -> Result<UdpSocket, XEOError> {
-        info!("starting xeo node: {}", addr);
-        let socket = UdpSocket::bind(&addr)?;
-        Ok(socket)
-    }
-
-    pub fn start_udp_recv(&self) {
-        debug!("bootstrapping udp receiver loop...");
-        let sock = self.udp_socket.try_clone().unwrap();
-        let tx = self.req_tx.clone();
-        thread::spawn(move || {
-            loop {
-                let mut buf = [0; 1024];
-                match sock.recv_from(&mut buf) {
-                    Ok((amt, _src)) => {
-                        let buf = &mut buf[..amt];
-                        let req = deserialize::<NetworkRequest>(buf).unwrap();
-                        tx.send(req).unwrap();
-                    },
-                    Err(e) => error!("{:#?}", e),
-                }
-            }
-        });
-    }
-
-    pub fn start_repl(&self) -> Result<(), XEOError> {
-        let stdin = io::stdin();
-        print!("---> "); io::stdout().flush()?;
-        while let Some(Ok(line)) = stdin.lock().lines().next() {
-            let cmd = self.parser.parse(line.as_str());
-            self.run_cmd(cmd)?;
-            print!("---> "); io::stdout().flush()?;
+    pub fn run(self) {
+        for msg in self.res_rx {
+            self.msg_tx.send(msg).unwrap();
         }
-        Ok(())
-    }
-
-    pub fn send_udp(&self, dst: SocketAddr, msg: &NetworkRequest) -> Result<(), XEOError> {
-        let packet = serialize(msg)?;
-        self.udp_socket.send_to(&packet, dst)?;
-        Ok(())
-    }
-
-    pub fn run_cmd(&self, cmd: ReplCmd) -> Result<(), XEOError> {
-        match cmd {
-            ReplCmd::Quit => return Err(XEOError::ReplExit),
-            ReplCmd::Unknown => println!("Unknown command."),
-            ReplCmd::Error{msg} => println!("{}", msg),
-            ReplCmd::PubKey{dst} => {
-                self.send_udp(dst.parse()?, &NetworkRequest::GetPubKey {
-                    src: self.udp_addr,
-                    req: PubKeyRequest{},
-                })?;
-            },
-            _ => unimplemented!(),
-        };
-        Ok(())
     }
 }
