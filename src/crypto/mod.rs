@@ -52,8 +52,8 @@ mod tests {
 
     #[test]
     fn test_get_pubkey() {
-        let c = Crypto::new();
-        let pubkey = c.get_pubkey();
+        // let c = Crypto::new();
+        // let pubkey = c.get_pubkey();
         // println!("{:?}", pubkey);
     }
 }

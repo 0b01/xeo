@@ -19,12 +19,17 @@ extern crate oping;
 mod crypto;
 mod errors;
 mod ping;
-mod cli;
-mod msgs;
+mod messages;
+mod node;
 
 use errors::MDCError;
+use node::Node;
 
 
 fn main() -> Result<(), MDCError> {
-    cli::start()
+    let node = Node::new()?;
+    node.start_udp_recv();
+    node.start_repl()?;
+
+    Ok(())
 }

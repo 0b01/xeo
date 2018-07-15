@@ -11,9 +11,12 @@ setperm:
 
 fmt:
     cargo fmt
-    
+
 check:
     cargo check
 
 test: build setperm
     cargo test -q
+
+p port: build setperm
+    ./target/debug/mdc -p {{port}}

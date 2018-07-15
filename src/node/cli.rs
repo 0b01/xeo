@@ -1,11 +1,7 @@
 use fern::{Dispatch, InitError, log_file};
 use log::LevelFilter;
-use std::io;
 use chrono::Local;
-use structopt::StructOpt;
-
-use std::net::UdpSocket;
-use errors::MDCError;
+use std::io;
 
 
 #[derive(StructOpt, Debug)]
@@ -43,22 +39,4 @@ impl Opt {
             .apply()?;
         Ok(())
     }
-}
-
-pub fn start() -> Result<(), MDCError>{
-    let opt = Opt::from_args();
-    opt.setup_logger()?;
-
-    let port = opt.port;
-    info!("starting mdc-cli v0.0.1 on port: {}", port);
-
-    let socket = UdpSocket::bind(format!("localhost:{}", port))?;
-    loop {
-        let mut buf = [0; 10];
-        let (amt, src) = socket.recv_from(&mut buf)?;
-        let buf = &mut buf[..amt];
-        buf.reverse();
-        socket.send_to(buf, &src)?;
-    }
-    Ok(())
 }
