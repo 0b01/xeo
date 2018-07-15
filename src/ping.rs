@@ -1,7 +1,7 @@
-use errors::MDCError;
+use errors::XEOError;
 use oping::Ping;
 
-pub fn run_ping<'a>(hosts: &[&str]) -> Result<Vec<(String, f64)>, MDCError> {
+pub fn run_ping<'a>(hosts: &[&str]) -> Result<Vec<(String, f64)>, XEOError> {
     let mut ping = Ping::new();
     ping.set_timeout(5.)?;
     for h in hosts.iter() {

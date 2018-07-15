@@ -5,7 +5,7 @@ use std::io;
 
 
 #[derive(StructOpt, Debug)]
-#[structopt(name = "mdc")]
+#[structopt(name = "xeo")]
 pub struct Opt {
     #[structopt(short = "v", long = "verbose", parse(from_occurrences))]
     pub verbose: u8,

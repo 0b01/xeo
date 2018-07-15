@@ -1,11 +1,11 @@
 run: build setperm
-    ./target/debug/mdc
+    ./target/debug/xeo
 
 build:
     cargo build -q
 
 setperm:
-    for f in $(ls ./target/debug/mdc-*); do \
+    for f in $(ls ./target/debug/xeo-*); do \
         sudo setcap cap_net_raw+ep $f; \
     done
 
@@ -19,4 +19,4 @@ test: build setperm
     cargo test -q
 
 p port: build setperm
-    ./target/debug/mdc -p {{port}}
+    ./target/debug/xeo -p {{port}}

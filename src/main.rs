@@ -22,11 +22,11 @@ mod ping;
 mod messages;
 mod node;
 
-use errors::MDCError;
+use errors::XEOError;
 use node::Node;
 
 
-fn main() -> Result<(), MDCError> {
+fn main() -> Result<(), XEOError> {
     let node = Node::new()?;
     node.start_udp_recv();
     node.start_repl()?;

@@ -5,7 +5,7 @@ use bincode::ErrorKind;
 use std::net::AddrParseError;
 
 #[derive(Debug)]
-pub enum MDCError {
+pub enum XEOError {
     PingError,
     IoError,
     LoggerError,
@@ -14,38 +14,38 @@ pub enum MDCError {
     AddrParseError
 }
 
-impl From<IoError> for MDCError {
+impl From<IoError> for XEOError {
     fn from(_: IoError) -> Self {
-        MDCError::IoError
+        XEOError::IoError
     }
 }
 
-impl From<PingError> for MDCError {
+impl From<PingError> for XEOError {
     fn from(_: PingError) -> Self {
-        MDCError::PingError
+        XEOError::PingError
     }
 }
 
-impl From<InitError> for MDCError {
+impl From<InitError> for XEOError {
     fn from(_: InitError) -> Self {
-        MDCError::LoggerError
+        XEOError::LoggerError
     }
 }
 
-impl From<ErrorKind> for MDCError {
+impl From<ErrorKind> for XEOError {
     fn from(_: ErrorKind) -> Self {
-        MDCError::BincodeError
+        XEOError::BincodeError
     }
 }
 
-impl<T> From<Box<T>> for MDCError {
+impl<T> From<Box<T>> for XEOError {
     fn from(a: Box<T>) -> Self {
-        MDCError::from(a)
+        XEOError::from(a)
     }
 }
 
-impl From<AddrParseError> for MDCError {
+impl From<AddrParseError> for XEOError {
     fn from(a: AddrParseError) -> Self {
-        MDCError::AddrParseError
+        XEOError::AddrParseError
     }
 }

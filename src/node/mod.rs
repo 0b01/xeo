@@ -4,7 +4,7 @@ pub mod repl;
 
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use structopt::StructOpt;
-use errors::MDCError;
+use errors::XEOError;
 use std::sync::mpsc;
 
 use self::repl::{ReplParser, ReplCmd};
@@ -24,7 +24,7 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn new() -> Result<Self, MDCError> {
+    pub fn new() -> Result<Self, XEOError> {
         let opt = cli::Opt::from_args();
         opt.setup_logger()?;
 
@@ -46,8 +46,8 @@ impl Node {
         })
     }
 
-    pub fn start_udp(addr: &str) -> Result<UdpSocket, MDCError> {
-        info!("starting mdc node: {}", addr);
+    pub fn start_udp(addr: &str) -> Result<UdpSocket, XEOError> {
+        info!("starting xeo node: {}", addr);
         let socket = UdpSocket::bind(&addr)?;
         Ok(socket)
     }
@@ -71,7 +71,7 @@ impl Node {
         });
     }
 
-    pub fn start_repl(&self) -> Result<(), MDCError> {
+    pub fn start_repl(&self) -> Result<(), XEOError> {
         let stdin = io::stdin();
         print!("---> "); io::stdout().flush()?;
         while let Some(Ok(line)) = stdin.lock().lines().next() {
@@ -82,15 +82,15 @@ impl Node {
         Ok(())
     }
 
-    pub fn send_udp(&self, dst: SocketAddr, msg: &NetworkRequest) -> Result<(), MDCError> {
+    pub fn send_udp(&self, dst: SocketAddr, msg: &NetworkRequest) -> Result<(), XEOError> {
         let packet = serialize(msg)?;
         self.udp_socket.send_to(&packet, dst)?;
         Ok(())
     }
 
-    pub fn run_cmd(&self, cmd: ReplCmd) -> Result<(), MDCError> {
+    pub fn run_cmd(&self, cmd: ReplCmd) -> Result<(), XEOError> {
         match cmd {
-            ReplCmd::Quit => return Err(MDCError::ReplExit),
+            ReplCmd::Quit => return Err(XEOError::ReplExit),
             ReplCmd::Unknown => println!("Unknown command."),
             ReplCmd::Error{msg} => println!("{}", msg),
             ReplCmd::PubKey{dst} => {
