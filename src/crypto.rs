@@ -8,7 +8,7 @@ struct Crypto {
 
 impl Crypto {
     fn new() -> Self {
-        let rsa = Rsa::generate(2048).unwrap();
+        let rsa = Rsa::generate(4096).unwrap();
         Crypto { rsa }
     }
 
@@ -41,7 +41,7 @@ mod tests {
     #[test]
     fn test_enc_dec() {
         let c = Crypto::new();
-        let data = vec![1; 128];
+        let data = vec![1; 256];
         let enc = c.encrypt_pub(&data);
         let dec = c.decrypt_priv(&enc);
         assert!(dec == data);
