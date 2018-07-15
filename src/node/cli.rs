@@ -1,8 +1,7 @@
-use fern::{Dispatch, InitError, log_file};
-use log::LevelFilter;
 use chrono::Local;
+use fern::{log_file, Dispatch, InitError};
+use log::LevelFilter;
 use std::io;
-
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "xeo")]

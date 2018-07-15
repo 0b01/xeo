@@ -1,7 +1,7 @@
+use bincode::ErrorKind;
+use fern::InitError;
 use oping::PingError;
 use std::io::Error as IoError;
-use fern::InitError;
-use bincode::ErrorKind;
 use std::net::AddrParseError;
 
 #[derive(Debug)]
@@ -11,7 +11,7 @@ pub enum XEOError {
     LoggerError,
     ReplExit,
     BincodeError,
-    AddrParseError
+    AddrParseError,
 }
 
 impl From<IoError> for XEOError {

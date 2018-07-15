@@ -1,21 +1,21 @@
 use openssl::pkey::Private;
 use openssl::rsa::{Padding, Rsa};
 
-struct Crypto {
+pub struct Crypto {
     rsa: Rsa<Private>,
 }
 
 impl Crypto {
-    fn new() -> Self {
+    pub fn new() -> Self {
         let rsa = Rsa::generate(4096).unwrap();
         Crypto { rsa }
     }
 
-    fn get_pubkey(&self) -> Vec<u8> {
+    pub fn get_pubkey(&self) -> Vec<u8> {
         self.rsa.public_key_to_der().unwrap()
     }
 
-    fn encrypt_pub(&self, data: &[u8]) -> Vec<u8> {
+    pub fn encrypt_pub(&self, data: &[u8]) -> Vec<u8> {
         let mut encrypted_data: Vec<u8> = vec![0; 512];
         let padding = Padding::PKCS1;
         let sz = self
@@ -26,7 +26,7 @@ impl Crypto {
         encrypted_data
     }
 
-    fn decrypt_priv(&self, data: &[u8]) -> Vec<u8> {
+    pub fn decrypt_priv(&self, data: &[u8]) -> Vec<u8> {
         let mut decrypted_data: Vec<u8> = vec![0; 512];
         let padding = Padding::PKCS1;
         let sz = self

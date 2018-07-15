@@ -5,21 +5,16 @@ type DstAddr = SocketAddr;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum NetworkRequest {
-    GetPubKey {
-        src: SrcAddr,
-        req: PubKeyRequest
-    },
-    PubKeyResponse{
-        src: SrcAddr,
-        key: PubKeyResponse
-    },
+    GetPubKey { src: SrcAddr },
+    PubKeyResponse { src: SrcAddr, key: Vec<u8> },
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct PubKeyResponse {
-    pubkey: Vec<u8>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct PubKeyRequest {
+impl NetworkRequest {
+    pub fn ty(&self) -> &'static str {
+        use self::NetworkRequest::*;
+        match self {
+            GetPubKey { .. } => "GetPubKey",
+            PubKeyResponse { .. } => "PubKeyResponse",
+        }
+    }
 }

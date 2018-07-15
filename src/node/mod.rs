@@ -1,24 +1,24 @@
-pub mod msg_handler;
-pub mod udp;
 pub mod cli;
+pub mod msg_handler;
 pub mod repl;
 pub mod state;
+pub mod udp;
 
 use self::msg_handler::MsgHandler;
 use self::repl::ReplHandler;
 use self::udp::UdpHandler;
 
-use std::net::SocketAddr;
-use structopt::StructOpt;
 use errors::XEOError;
-use std::sync::mpsc::{self, Sender, Receiver};
 use messages::msgs::NetworkRequest;
+use std::net::SocketAddr;
+use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::{Arc, Mutex};
+use structopt::StructOpt;
 
 type DstAddr = SocketAddr;
 
 pub struct Node {
-    res_rx: Receiver<(DstAddr, NetworkRequest)>,
+    // res_rx: Receiver<(DstAddr, NetworkRequest)>,
     msg_tx: Sender<(DstAddr, NetworkRequest)>,
 }
 
@@ -32,27 +32,28 @@ impl Node {
 
         let (msg_tx, msg_rx) = mpsc::channel();
         let (req_tx, req_rx) = mpsc::channel();
-        let (res_tx, res_rx) = mpsc::channel();
+        // let (res_tx, res_rx) = mpsc::channel();
 
-        let state = Arc::new(Mutex::new(state::NodeState::new(udp_addr)));
+        let st = state::NodeState::new(udp_addr);
+        let state = Arc::new(Mutex::new(st));
 
         let udp_handler = UdpHandler::new(state.clone())?;
         udp_handler.run(msg_rx, req_tx);
         let msg_handler = MsgHandler::new(state.clone());
-        msg_handler.run(req_rx, res_tx);
+        msg_handler.run(req_rx, msg_tx.clone());
         let repl_handler = ReplHandler::new(state.clone());
         repl_handler.run(msg_tx.clone())?;
 
+        // for msg in res_rx {
+        //     println!("shit");
+        //     msg_tx.send(msg).unwrap();
+        // }
 
         Ok(Self {
-            res_rx,
+            // res_rx,
             msg_tx,
         })
     }
 
-    pub fn run(self) {
-        for msg in self.res_rx {
-            self.msg_tx.send(msg).unwrap();
-        }
-    }
+    pub fn run(self) {}
 }

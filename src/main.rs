@@ -9,22 +9,20 @@ extern crate structopt;
 
 #[macro_use]
 extern crate log;
-extern crate fern;
 extern crate chrono;
-
+extern crate fern;
 
 extern crate openssl;
 extern crate oping;
 
 mod crypto;
 mod errors;
-mod ping;
 mod messages;
 mod node;
+mod ping;
 
 use errors::XEOError;
 use node::Node;
-
 
 fn main() -> Result<(), XEOError> {
     let node = Node::new()?;

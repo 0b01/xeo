@@ -1,14 +1,15 @@
-use std::net::{SocketAddr};
+use crypto::Crypto;
+use std::net::SocketAddr;
 
 pub struct NodeState {
-    server_addr: SocketAddr,
+    pub server_addr: SocketAddr,
+    pub rsa: Crypto,
 }
 
 impl NodeState {
     pub fn new(server_addr: SocketAddr) -> Self {
-        Self {
-            server_addr,
-        }
+        let rsa = Crypto::new();
+        Self { server_addr, rsa }
     }
 
     pub fn get_addr(&self) -> SocketAddr {
