@@ -1,7 +1,8 @@
 [package]
-name = "MDC"
+name = "mdc"
 version = "0.1.0"
 authors = ["ricky han <github@rickyhan.com>"]
 
 [dependencies]
 oping = "0.3.3"
+openssl = "0.10.10"
