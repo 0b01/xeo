@@ -1,14 +1,19 @@
-use oping::PingError;
 use std::ops;
+use oping::PingError;
+use std::io::Error as IoError;
+use fern::InitError;
 
 #[derive(Debug)]
 pub enum MDCError {
     PingError,
+    IoError,
+    LoggerError,
 }
 
-pub enum MDCResult<T> {
-    Ok(T),
-    Err(MDCError),
+impl From<IoError> for MDCError {
+    fn from(_: IoError) -> Self {
+        MDCError::IoError
+    }
 }
 
 impl From<PingError> for MDCError {
@@ -17,22 +22,8 @@ impl From<PingError> for MDCError {
     }
 }
 
-impl<T> ops::Try for MDCResult<T> {
-    type Ok = T;
-    type Error = MDCError;
-
-    fn into_result(self) -> Result<Self::Ok, Self::Error> {
-        match self {
-            MDCResult::Ok(t) => Ok(t),
-            MDCResult::Err(e) => Err(e),
-        }
-    }
-
-    fn from_error(v: Self::Error) -> Self {
-        MDCResult::Err(v)
-    }
-
-    fn from_ok(v: Self::Ok) -> Self {
-        MDCResult::Ok(v)
+impl From<InitError> for MDCError {
+    fn from(_: InitError) -> Self {
+        MDCError::LoggerError
     }
 }

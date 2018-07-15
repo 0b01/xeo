@@ -1,4 +1,3 @@
-use errors::MDCResult;
 use openssl::pkey::Private;
 use openssl::rsa::{Padding, Rsa};
 
@@ -10,6 +9,10 @@ impl Crypto {
     fn new() -> Self {
         let rsa = Rsa::generate(4096).unwrap();
         Crypto { rsa }
+    }
+
+    fn get_pubkey(&self) -> Vec<u8> {
+        self.rsa.public_key_to_der().unwrap()
     }
 
     fn encrypt_pub(&self, data: &[u8]) -> Vec<u8> {
@@ -45,5 +48,12 @@ mod tests {
         let enc = c.encrypt_pub(&data);
         let dec = c.decrypt_priv(&enc);
         assert!(dec == data);
+    }
+
+    #[test]
+    fn test_get_pubkey() {
+        let c = Crypto::new();
+        let pubkey = c.get_pubkey();
+        // println!("{:?}", pubkey);
     }
 }

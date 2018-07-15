@@ -11,6 +11,9 @@ setperm:
 
 fmt:
     cargo fmt
+    
+check:
+    cargo check
 
 test: build setperm
     cargo test -q
