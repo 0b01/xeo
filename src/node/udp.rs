@@ -29,7 +29,7 @@ impl UdpHandler {
         self,
         msg_rx: Receiver<(SocketAddr, NetworkRequest)>,
         req_tx: Sender<NetworkRequest>,
-    ) {
+    ) -> () {
         debug!("bootstrapping udp receiver loop...");
         let sock = self.udp_socket.try_clone().unwrap();
         thread::spawn(move || loop {

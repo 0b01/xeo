@@ -3,7 +3,7 @@ use node::state::NodeState;
 use std::net::SocketAddr;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, Mutex};
-use std::thread;
+use std::thread::{self, JoinHandle};
 
 type ST = Arc<Mutex<NodeState>>;
 type DstAddr = SocketAddr;
@@ -38,7 +38,7 @@ impl MsgHandler {
         }
     }
 
-    pub fn run(self, req_rx: Receiver<NetworkRequest>, res_tx: Sender<(DstAddr, NetworkRequest)>) {
+    pub fn run(self, req_rx: Receiver<NetworkRequest>, res_tx: Sender<(DstAddr, NetworkRequest)>) -> JoinHandle<i32> {
         thread::spawn(move || loop {
             match req_rx.recv() {
                 Ok(req) => {
@@ -49,6 +49,6 @@ impl MsgHandler {
                 }
                 Err(e) => error!("{:#?}", e),
             }
-        });
+        })
     }
 }

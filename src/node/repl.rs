@@ -14,6 +14,7 @@ pub enum ReplCmd {
     Quit,
     PubKey { dst: String },
     Error { msg: String },
+    Peers,
     Unknown,
 }
 
@@ -24,6 +25,8 @@ impl ReplParser {
             ReplCmd::Quit
         } else if line.starts_with("pubkey") {
             ReplParser::parse_pubkey(line)
+        } else if line == "peers" {
+            ReplCmd::Peers
         } else {
             ReplCmd::Unknown
         }
@@ -37,7 +40,7 @@ impl ReplParser {
                 dst: addr.to_string(),
             },
             None => ReplCmd::Error {
-                msg: "Must supply a dst addr".to_owned(),
+                msg: "Syntax: pubkey [HOSTNAME]".to_owned(),
             },
         }
     }
@@ -46,6 +49,7 @@ impl ReplParser {
 pub enum ReplError {
     ReplExit,
     ReplUnknownCommand,
+    Ignore,
     ReplCmdError(String),
 }
 
@@ -71,7 +75,11 @@ impl ReplHandler {
         while let Some(Ok(line)) = stdin.lock().lines().next() {
             let cmd = ReplParser::parse(line.as_str());
             match self.run_cmd(cmd) {
-                Err(ReplError::ReplExit) => break,
+                Err(ReplError::Ignore) => (),
+                Err(ReplError::ReplExit) => {
+                    println!("bye.", );
+                    break;
+                }
                 Err(ReplError::ReplUnknownCommand) => {
                     println!("Unknown command.");
                 }
@@ -91,6 +99,11 @@ impl ReplHandler {
             ReplCmd::Quit => Err(ReplError::ReplExit),
             ReplCmd::Unknown => Err(ReplError::ReplUnknownCommand),
             ReplCmd::Error { msg } => Err(ReplError::ReplCmdError(msg)),
+            ReplCmd::Peers => {
+                let st = self.st.lock().unwrap();
+                st.print_peers_info();
+                Err(ReplError::Ignore)
+            }
             ReplCmd::PubKey { dst } => Ok((
                 dst.parse()?,
                 NetworkRequest::GetPubKey {

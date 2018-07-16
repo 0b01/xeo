@@ -1,28 +1,34 @@
 use chrono::Local;
 use fern::{log_file, Dispatch, InitError};
 use log::LevelFilter;
+use std::path::PathBuf;
 use std::io;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "xeo")]
 pub struct Opt {
+    #[structopt(short = "i", long = "interactive")]
+    pub interactive: bool,
     #[structopt(short = "v", long = "verbose", parse(from_occurrences))]
     pub verbose: u8,
     #[structopt(short = "p", long = "port", default_value = "9000")]
     pub port: u16,
+    #[structopt(long = "peerlist", parse(from_os_str))]
+    pub path_to_peers_txt: Option<PathBuf>,
+
 }
 
 impl Opt {
     pub fn setup_logger(&self) -> Result<(), InitError> {
         let level = match self.verbose {
-            0 => LevelFilter::Debug,
+            0 => LevelFilter::Debug, // Error
             1 => LevelFilter::Warn,
             2 => LevelFilter::Info,
             3 => LevelFilter::Debug,
             _ => LevelFilter::Trace,
         };
 
-        Dispatch::new()
+        let d = Dispatch::new()
             .format(|out, message, record| {
                 out.finish(format_args!(
                     "{}[{}][{}] {}",
@@ -33,9 +39,14 @@ impl Opt {
                 ))
             })
             .level(level)
-            .chain(io::stdout())
-            .chain(log_file("output.log")?)
-            .apply()?;
+            .chain(log_file("output.log")?);
+
+        if self.interactive {
+            d
+        } else {
+            d.chain(io::stdout())
+        }.apply()?;
+
         Ok(())
     }
 }

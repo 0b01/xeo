@@ -5,7 +5,7 @@ build:
     cargo build -q
 
 setperm:
-    for f in $(ls ./target/debug/xeo-*); do \
+    for f in $(ls ./target/debug/xeo*); do \
         sudo setcap cap_net_raw+ep $f; \
     done
 

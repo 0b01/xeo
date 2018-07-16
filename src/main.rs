@@ -21,12 +21,12 @@ mod messages;
 mod node;
 mod ping;
 
+mod tuan; // TODO...
+
 use errors::XEOError;
 use node::Node;
 
 fn main() -> Result<(), XEOError> {
-    let node = Node::new()?;
-    node.run();
-
+    Node::start()?;
     Ok(())
 }
