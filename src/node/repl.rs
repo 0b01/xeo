@@ -77,7 +77,7 @@ impl ReplHandler {
             match self.run_cmd(cmd) {
                 Err(ReplError::Ignore) => (),
                 Err(ReplError::ReplExit) => {
-                    println!("bye.", );
+                    println!("bye.",);
                     break;
                 }
                 Err(ReplError::ReplUnknownCommand) => {

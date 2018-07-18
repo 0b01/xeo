@@ -28,17 +28,17 @@ impl UdpHandler {
     pub fn run(
         self,
         msg_rx: Receiver<(SocketAddr, NetworkRequest)>,
-        req_tx: Sender<NetworkRequest>,
+        req_tx: Sender<(SocketAddr, NetworkRequest)>,
     ) -> () {
         debug!("bootstrapping udp receiver loop...");
         let sock = self.udp_socket.try_clone().unwrap();
         thread::spawn(move || loop {
             let mut buf = [0; 1024];
             match sock.recv_from(&mut buf) {
-                Ok((amt, _src)) => {
+                Ok((amt, src)) => {
                     let buf = &mut buf[..amt];
                     let req = deserialize::<NetworkRequest>(buf).unwrap();
-                    req_tx.send(req).unwrap();
+                    req_tx.send((src, req)).unwrap();
                 }
                 Err(e) => error!("{:#?}", e),
             }

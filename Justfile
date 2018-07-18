@@ -1,5 +1,5 @@
 run: build setperm
-    ./target/debug/xeo
+    ./target/debug/xeo --peerlist peers.txt
 
 build:
     cargo build -q
@@ -19,4 +19,7 @@ test: build setperm
     cargo test -q
 
 p port: build setperm
-    ./target/debug/xeo -p {{port}}
+    ./target/debug/xeo -p {{port}} --peerlist peers.txt
+    
+repl: build setperm
+    ./target/debug/xeo -i --peerlist peers.txt

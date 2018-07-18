@@ -21,8 +21,6 @@ mod messages;
 mod node;
 mod ping;
 
-mod tuan; // TODO...
-
 use errors::XEOError;
 use node::Node;
 

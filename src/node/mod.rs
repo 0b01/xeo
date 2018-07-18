@@ -1,14 +1,14 @@
-use std::net::SocketAddr;
-use std::sync::mpsc::{self};
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use std::path::PathBuf;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::net::SocketAddr;
+use std::path::PathBuf;
+use std::sync::mpsc::{self, Sender};
+use std::sync::{Arc, Mutex};
 
-pub mod peer;
 pub mod cli;
 pub mod msg_handler;
+pub mod peer;
 pub mod repl;
 pub mod state;
 pub mod udp;
@@ -16,14 +16,19 @@ pub mod udp;
 use self::peer::PeerState;
 use self::state::Peers;
 
+use messages::msgs::NetworkRequest;
 use self::msg_handler::MsgHandler;
 use self::repl::ReplHandler;
 use self::udp::UdpHandler;
 use errors::XEOError;
 use structopt::StructOpt;
+use self::state::NodeState;
 
+type ST = Arc<Mutex<NodeState>>;
 
 pub struct Node {
+    msg_tx: Sender<(SocketAddr, NetworkRequest)>,
+    state: ST,
 }
 
 impl Node {
@@ -50,6 +55,8 @@ impl Node {
         let msg_handler = MsgHandler::new(state.clone());
         let msg_join = msg_handler.run(req_rx, msg_tx.clone());
 
+        Node::im_alive(state.clone(), msg_tx.clone());
+
         if opt.interactive {
             let repl_handler = ReplHandler::new(state.clone());
             repl_handler.run(msg_tx.clone())?;
@@ -57,7 +64,19 @@ impl Node {
             msg_join.join().unwrap();
         }
 
-        Ok(Self{})
+        Ok(Self {
+            msg_tx,
+            state,
+        })
+    }
+
+    fn im_alive(state: ST, msg_tx: Sender<(SocketAddr, NetworkRequest)>) {
+        let st = state.lock().unwrap();
+        let my_addr = st.server_addr;
+        for (addr, _peer_state) in st.peers.pairs() {
+            let req = NetworkRequest::get_pub_key(my_addr);
+            msg_tx.send((addr.clone(), req)).unwrap();
+        }
     }
 }
 

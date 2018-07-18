@@ -10,6 +10,12 @@ pub enum NetworkRequest {
 }
 
 impl NetworkRequest {
+    pub fn get_pub_key(src: SrcAddr) -> NetworkRequest {
+        NetworkRequest::GetPubKey {
+            src
+        }
+    }
+
     pub fn ty(&self) -> &'static str {
         use self::NetworkRequest::*;
         match self {

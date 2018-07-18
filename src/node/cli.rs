@@ -1,8 +1,8 @@
 use chrono::Local;
 use fern::{log_file, Dispatch, InitError};
 use log::LevelFilter;
-use std::path::PathBuf;
 use std::io;
+use std::path::PathBuf;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "xeo")]
@@ -15,7 +15,6 @@ pub struct Opt {
     pub port: u16,
     #[structopt(long = "peerlist", parse(from_os_str))]
     pub path_to_peers_txt: Option<PathBuf>,
-
 }
 
 impl Opt {
